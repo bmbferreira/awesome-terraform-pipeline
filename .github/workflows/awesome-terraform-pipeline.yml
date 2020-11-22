@@ -27,7 +27,9 @@ jobs:
         with:
           github_token: ${{ secrets.github_token }}
           flags: "-c ../.tflint.hcl " # Optional. Add custom tflint flags
-          working-directory: terraform/staging
+          working_directory: terraform/staging
+          fail_on_error: "true"
+          filter_mode: "nofilter"
 
       - name: Terraform Validate
         id: validate
