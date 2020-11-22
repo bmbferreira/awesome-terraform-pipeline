@@ -13,11 +13,7 @@ jobs:
         name: Setup Terraform
       - uses: actions/checkout@v1
         name: Checkout source code
-      - uses: lablabs/setup-tflint@v1
-        name: Setup TFLint
-      - shell: bash
-        run: |
-          ls; tflint --version
+
       - name: Terraform fmt
         id: fmt
         run: terraform fmt -check
@@ -26,6 +22,12 @@ jobs:
       - name: Terraform Init
         id: init
         run: terraform init
+
+      - name: tflint
+        uses: reviewdog/action-tflint@master
+        with:
+          github_token: ${{ secrets.github_token }}
+          flags: "-c ../.tflint.hcl " # Optional. Add custom tflint flags
 
       - name: Terraform Validate
         id: validate
