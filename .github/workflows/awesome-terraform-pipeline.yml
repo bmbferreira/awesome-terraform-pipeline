@@ -1,14 +1,13 @@
 name: Awesome Terraform Pipeline
 
-on: [push, pull_request]
-
+on: [pull_request]
+env:
+  AWS_DEFAULT_REGION: ${{ secrets.aws_default_region }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
 jobs:
-  terraform-validate-staging:
+  terraform-validate:
     runs-on: ubuntu-latest
-    env:
-      AWS_DEFAULT_REGION: ${{ secrets.aws_default_region }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
     steps:
       - uses: hashicorp/setup-terraform@v1
         name: Setup Terraform
@@ -26,7 +25,7 @@ jobs:
         uses: reviewdog/action-tflint@master
         with:
           github_token: ${{ secrets.github_token }}
-          flags: "-c ../.tflint.hcl " # Optional. Add custom tflint flags
+          flags: "-c ../.tflint.hcl"
           working_directory: terraform/staging
           fail_on_error: "true"
           filter_mode: "nofilter"
