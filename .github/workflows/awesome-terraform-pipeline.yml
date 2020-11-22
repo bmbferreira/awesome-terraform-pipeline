@@ -5,34 +5,36 @@ on: [push, pull_request]
 jobs:
   terraform-validate-staging:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: terraform/staging
+    env:
+      AWS_DEFAULT_REGION: ${{ secrets.aws_default_region }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
     steps:
       - uses: hashicorp/setup-terraform@v1
         name: Setup Terraform
       - uses: actions/checkout@v1
         name: Checkout source code
-
       - name: Terraform fmt
         id: fmt
-        run: terraform fmt -check
-        continue-on-error: true
-
+        run: terraform fmt --recursive -check
+        working-directory: terraform
       - name: Terraform Init
         id: init
         run: terraform init
-
+        working-directory: terraform/staging
       - name: tflint
         uses: reviewdog/action-tflint@master
         with:
           github_token: ${{ secrets.github_token }}
           flags: "-c ../.tflint.hcl " # Optional. Add custom tflint flags
+          working-directory: terraform/staging
 
       - name: Terraform Validate
         id: validate
         run: terraform validate -no-color
+        working-directory: terraform/staging
 
       - name: Terraform Plan
         id: plan
         run: terraform plan -no-color
+        working-directory: terraform/staging
