@@ -1,0 +1,36 @@
+name: Awesome Terraform Pipeline
+
+on: [push, pull_request]
+
+jobs:
+  terraform-validate-staging:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform/staging
+    steps:
+      - uses: hashicorp/setup-terraform@v1
+        name: Setup Terraform
+      - uses: actions/checkout@v1
+        name: Checkout source code
+      - uses: lablabs/setup-tflint@v1
+        name: Setup TFLint
+      - shell: bash
+        run: |
+          ls; tflint --version
+      - name: Terraform fmt
+        id: fmt
+        run: terraform fmt -check
+        continue-on-error: true
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color
