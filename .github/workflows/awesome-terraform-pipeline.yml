@@ -1,6 +1,12 @@
 name: Awesome Terraform Pipeline
 
-on: [pull_request]
+on: 
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 env:
   AWS_DEFAULT_REGION: ${{ secrets.aws_default_region }}
   AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
