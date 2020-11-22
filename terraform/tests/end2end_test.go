@@ -1,10 +1,10 @@
 package test
 
 import (
-	"fmt"
-	"testing"
-	"net/http"
 	"bytes"
+	"fmt"
+	"net/http"
+	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
@@ -15,7 +15,7 @@ func TestTerraformApiGateway(t *testing.T) {
 
 	// Give this lambda function a unique ID for a name so we can distinguish it from any other lambdas
 	// in your AWS account
-	apiName := "stripe-api-router-test"
+	apiName := "name"
 
 	// Pick a random AWS region to test in. This helps ensure your code works in all regions.
 	//awsRegion := aws.GetRandomStableRegion(t, nil, nil)
@@ -27,7 +27,7 @@ func TestTerraformApiGateway(t *testing.T) {
 
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
-			"name": apiName,
+			"name":       apiName,
 			"stage_name": "test",
 		},
 	}
@@ -47,17 +47,17 @@ func TestTerraformApiGateway(t *testing.T) {
 	//response := aws.Invoke(t, awsRegion, functionName, ExampleFunctionPayload{ShouldFail: false, Echo: "hi!"})
 
 	var jsonStr = []byte(`{}`)
-    req, err := http.NewRequest(httpMethod, apiUrl, bytes.NewBuffer(jsonStr))
-    req.Header.Set("Content-Type", "application/json")
+	req, err := http.NewRequest(httpMethod, apiUrl, bytes.NewBuffer(jsonStr))
+	req.Header.Set("Content-Type", "application/json")
 
-    client := &http.Client{}
-    resp, err := client.Do(req)
-    if err != nil {
-        panic(err)
-    }
-    defer resp.Body.Close()
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
 
-    fmt.Println("response Status:", resp.Status)
+	fmt.Println("response Status:", resp.Status)
 
 	// This function just echos it's input as a JSON string when `ShouldFail` is `false``
 	assert.Equal(t, 200, resp.Status)
