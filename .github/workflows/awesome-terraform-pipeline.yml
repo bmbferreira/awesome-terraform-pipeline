@@ -1,4 +1,4 @@
-name: Awesome Terraform Pipeline
+name: Staging Workflow
 
 on: 
   push:
@@ -7,13 +7,14 @@ on:
   pull_request:
     branches:
       - main
+
 env:
   AWS_DEFAULT_REGION: ${{ secrets.aws_default_region }}
   AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
+
 jobs:
-  terraform-validate:
-    runs-on: ubuntu-latest
+  terraform-fmt-check:
     steps:
       - uses: hashicorp/setup-terraform@v1
         name: Setup Terraform
@@ -23,6 +24,27 @@ jobs:
         id: fmt
         run: terraform fmt --recursive -check
         working-directory: terraform
+  terraform-validate:
+    steps:
+      - uses: hashicorp/setup-terraform@v1
+        name: Setup Terraform
+      - uses: actions/checkout@v1
+        name: Checkout source code
+      - name: Terraform Init
+        id: init
+        run: terraform init
+        working-directory: terraform/staging
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+        working-directory: terraform/staging
+  terraform-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hashicorp/setup-terraform@v1
+        name: Setup Terraform
+      - uses: actions/checkout@v1
+        name: Checkout source code
       - name: Terraform Init
         id: init
         run: terraform init
@@ -35,13 +57,44 @@ jobs:
           working_directory: terraform/staging
           fail_on_error: "true"
           filter_mode: "nofilter"
-
-      - name: Terraform Validate
-        id: validate
-        run: terraform validate -no-color
+  terraform-plan:
+    runs-on: ubuntu-latest
+    needs: [terraform-fmt-check, terraform-validate, terraform-lint]
+    steps:
+      - uses: hashicorp/setup-terraform@v1
+        name: Setup Terraform
+      - uses: actions/checkout@v1
+        name: Checkout source code
+      - name: Terraform Init
+        id: init
+        run: terraform init
         working-directory: terraform/staging
-
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color
+        run: terraform plan -no-color -out=tfplan
         working-directory: terraform/staging
+        continue-on-error: true
+      - uses: actions/github-script@0.9.0
+        if: github.event_name == 'pull_request'
+        env:
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+            
+            <details><summary>Show Plan</summary>
+            
+            \`\`\`${process.env.PLAN}\`\`\`
+            
+            </details>
+            
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+              
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
