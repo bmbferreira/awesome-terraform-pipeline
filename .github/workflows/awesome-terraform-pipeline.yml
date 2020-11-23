@@ -103,7 +103,7 @@ jobs:
   infracost:
     runs-on: ubuntu-latest
     name: Show infracost diff
-    needs: [terraform-fmt-check, terraform-validate, terraform-lint]
+    needs: terraform-plan
     if: github.event_name == 'pull_request'
     steps:
     - name: Checkout main branch
