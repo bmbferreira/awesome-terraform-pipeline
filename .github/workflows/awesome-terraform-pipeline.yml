@@ -15,6 +15,7 @@ env:
 
 jobs:
   terraform-fmt-check:
+    runs-on: ubuntu-latest
     steps:
       - uses: hashicorp/setup-terraform@v1
         name: Setup Terraform
@@ -25,6 +26,7 @@ jobs:
         run: terraform fmt --recursive -check
         working-directory: terraform
   terraform-validate:
+    runs-on: ubuntu-latest
     steps:
       - uses: hashicorp/setup-terraform@v1
         name: Setup Terraform
