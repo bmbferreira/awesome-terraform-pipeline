@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: hashicorp/setup-terraform@v1
         name: Setup Terraform
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
         name: Checkout source code
       - name: Terraform fmt
         id: fmt
@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: hashicorp/setup-terraform@v1
         name: Setup Terraform
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
         name: Checkout source code
       - name: Terraform Init
         id: init
@@ -42,11 +42,10 @@ jobs:
         working-directory: terraform/staging
   terraform-lint:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
     steps:
       - uses: hashicorp/setup-terraform@v1
         name: Setup Terraform
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
         name: Checkout source code
       - name: Terraform Init
         id: init
@@ -66,7 +65,7 @@ jobs:
     steps:
       - uses: hashicorp/setup-terraform@v1
         name: Setup Terraform
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
         name: Checkout source code
       - name: Terraform Init
         id: init
@@ -101,3 +100,26 @@ jobs:
               repo: context.repo.repo,
               body: output
             })
+  infracost:
+    runs-on: ubuntu-latest
+    name: Show infracost diff
+    needs: [terraform-fmt-check, terraform-validate, terraform-lint]
+    if: github.event_name == 'pull_request'
+    steps:
+    - name: Checkout main branch
+      uses: actions/checkout@v2
+      with:
+        ref: main
+        path: master
+    - name: Checkout pull request branch
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: pull_request
+    - name: Run infracost diff
+      uses: infracost/infracost-gh-action@master 
+      env:
+        INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tfdir: terraform/staging
