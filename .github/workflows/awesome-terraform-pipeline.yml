@@ -106,11 +106,11 @@ jobs:
     needs: [terraform-fmt-check, terraform-validate, terraform-lint]
     if: github.event_name == 'pull_request'
     steps:
-    - name: Checkout master branch
+    - name: Checkout main branch
       uses: actions/checkout@v2
       with:
         ref: main
-        path: main
+        path: master
     - name: Checkout pull request branch
       uses: actions/checkout@v2
       with:
