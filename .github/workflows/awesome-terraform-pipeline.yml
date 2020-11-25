@@ -61,10 +61,13 @@ jobs:
           filter_mode: "nofilter"
   tfsec:
     runs-on: ubuntu-latest
-    name: Check security vulnerabilities with tfsec
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
+      - name: Terraform Init
+        id: init
+        run: terraform init
+        working-directory: terraform/staging
       - name: tfsec
         uses: reviewdog/action-tfsec@master
         with:
@@ -76,7 +79,6 @@ jobs:
           flags: ""
   checkov:
     runs-on: ubuntu-latest
-    name: checkov-action
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
