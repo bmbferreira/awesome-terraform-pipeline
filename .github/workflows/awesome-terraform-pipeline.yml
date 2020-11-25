@@ -59,14 +59,42 @@ jobs:
           working_directory: terraform/staging
           fail_on_error: "true"
           filter_mode: "nofilter"
+  tfsec:
+    runs-on: ubuntu-latest
+    name: Check security vulnerabilities with tfsec
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+      - name: tfsec
+        uses: reviewdog/action-tfsec@master
+        with:
+          github_token: ${{ secrets.github_token }}
+          working_directory: terraform/staging
+          reporter: github-pr-review 
+          fail_on_error: "true" 
+          filter_mode: "nofilter"
+          flags: ""
+  checkov:
+    runs-on: ubuntu-latest
+    name: checkov-action
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+      - name: Run Checkov action
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: terraform/staging
+          quiet: true 
+          framework: terraform 
   terraform-plan:
     runs-on: ubuntu-latest
     needs: [terraform-fmt-check, terraform-validate, terraform-lint]
     steps:
-      - uses: hashicorp/setup-terraform@v1
-        name: Setup Terraform
-      - uses: actions/checkout@v2
-        name: Checkout source code
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+      - name: Checkout source code
+        uses: actions/checkout@v2
       - name: Terraform Init
         id: init
         run: terraform init
@@ -76,7 +104,9 @@ jobs:
         run: terraform plan -no-color -out=tfplan
         working-directory: terraform/staging
         continue-on-error: true
-      - uses: actions/github-script@0.9.0
+      - name: Publish terraform plan
+        id: publish-plan
+        uses: actions/github-script@0.9.0
         if: github.event_name == 'pull_request'
         env:
           PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
@@ -102,7 +132,7 @@ jobs:
             })
   infracost:
     runs-on: ubuntu-latest
-    name: Show infracost diff
+    name: Evaluate cost management with infracost
     needs: terraform-plan
     if: github.event_name == 'pull_request'
     steps:
