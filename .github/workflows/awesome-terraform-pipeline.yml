@@ -152,4 +152,4 @@ jobs:
         INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tfdir: terraform/staging
+        tfdir: master/terraform/staging
