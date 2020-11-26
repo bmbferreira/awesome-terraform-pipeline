@@ -1,4 +1,4 @@
-name: Staging Workflow
+name: Awesome Terraform Workflow
 
 on: 
   push:
@@ -12,6 +12,7 @@ env:
   AWS_DEFAULT_REGION: ${{ secrets.aws_default_region }}
   AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
+  STAGING_TF_WORKING_DIR: terraform/staging
 
 jobs:
   terraform-fmt-check:
@@ -35,11 +36,11 @@ jobs:
       - name: Terraform Init
         id: init
         run: terraform init
-        working-directory: terraform/staging
+        working-directory: ${{ env.STAGING_TF_WORKING_DIR }}
       - name: Terraform Validate
         id: validate
         run: terraform validate -no-color
-        working-directory: terraform/staging
+        working-directory: ${{ env.STAGING_TF_WORKING_DIR }}
   terraform-lint:
     runs-on: ubuntu-latest
     steps:
@@ -50,13 +51,13 @@ jobs:
       - name: Terraform Init
         id: init
         run: terraform init
-        working-directory: terraform/staging
+        working-directory: ${{ env.STAGING_TF_WORKING_DIR }}
       - name: tflint
         uses: reviewdog/action-tflint@master
         with:
           github_token: ${{ secrets.github_token }}
           flags: "-c ../.tflint.hcl"
-          working_directory: terraform/staging
+          working_directory: ${{ env.STAGING_TF_WORKING_DIR }}
           fail_on_error: "true"
           filter_mode: "nofilter"
   checkov:
@@ -68,7 +69,7 @@ jobs:
         id: checkov
         uses: bridgecrewio/checkov-action@master
         with:
-          directory: terraform/staging
+          directory: ${{ env.STAGING_TF_WORKING_DIR }}
           quiet: true 
           framework: terraform 
   terraform-plan:
@@ -82,11 +83,11 @@ jobs:
       - name: Terraform Init
         id: init
         run: terraform init
-        working-directory: terraform/staging
+        working-directory: ${{ env.STAGING_TF_WORKING_DIR }}
       - name: Terraform Plan
         id: plan
         run: terraform plan -no-color -out=tfplan
-        working-directory: terraform/staging
+        working-directory: ${{ env.STAGING_TF_WORKING_DIR }}
         continue-on-error: true
       - name: Publish terraform plan
         id: publish-plan
@@ -128,6 +129,6 @@ jobs:
         INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tfdir: terraform/staging
+        tfdir: ${{ env.STAGING_TF_WORKING_DIR }}
         entrypoint: /scripts/ci/diff.sh
         percentage_threshold: 1
