@@ -59,24 +59,6 @@ jobs:
           working_directory: terraform/staging
           fail_on_error: "true"
           filter_mode: "nofilter"
-  tfsec:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v2
-      - name: Terraform Init
-        id: init
-        run: terraform init
-        working-directory: terraform/staging
-      - name: tfsec
-        uses: reviewdog/action-tfsec@master
-        with:
-          github_token: ${{ secrets.github_token }}
-          working_directory: terraform/staging
-          reporter: github-pr-review 
-          fail_on_error: "true" 
-          filter_mode: "nofilter"
-          flags: ""
   checkov:
     runs-on: ubuntu-latest
     steps:
