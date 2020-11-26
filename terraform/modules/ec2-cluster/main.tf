@@ -39,4 +39,5 @@ resource "aws_ebs_volume" "this" {
   availability_zone = module.ec2_cluster.availability_zone[count.index]
   size              = 1
   type              = var.ebs_type
+  encrypted         = true
 }
