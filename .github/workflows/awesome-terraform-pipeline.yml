@@ -17,6 +17,8 @@ env:
 jobs:
   terraform-fmt-check:
     runs-on: ubuntu-latest
+    outputs:
+      fmt: ${{ steps.fmt.outcome }} # map step output to job output
     steps:
       - uses: hashicorp/setup-terraform@v1
         name: Setup Terraform
@@ -92,13 +94,15 @@ jobs:
       - name: Publish terraform plan
         id: publish-plan
         uses: actions/github-script@0.9.0
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' 
         env:
           PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            const output = `#### Terraform Format and Style 🖌\`${{ needs.terraform-fmt-check.outputs.fmt }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖${{ steps.validate.outputs.stdout }}
             #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
             
             <details><summary>Show Plan</summary>
@@ -107,7 +111,7 @@ jobs:
             
             </details>
             
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.STAGING_TF_WORKING_DIR }}\`, Workflow: \`${{ github.workflow }}\`*`;
               
             github.issues.createComment({
               issue_number: context.issue.number,
