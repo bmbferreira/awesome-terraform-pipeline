@@ -18,7 +18,7 @@ jobs:
   terraform-fmt-check:
     runs-on: ubuntu-latest
     outputs:
-      fmt: ${{ steps.fmt.outcome }} # map step output to job output
+      fmt: ${{ steps.fmt.outcome }} 
     steps:
       - uses: hashicorp/setup-terraform@v1
         name: Setup Terraform
@@ -30,6 +30,8 @@ jobs:
         working-directory: terraform
   terraform-validate:
     runs-on: ubuntu-latest
+    outputs:
+      validate: ${{ steps.validate.outcome }}
     steps:
       - uses: hashicorp/setup-terraform@v1
         name: Setup Terraform
@@ -102,7 +104,7 @@ jobs:
           script: |
             const output = `#### Terraform Format and Style 🖌\`${{ needs.terraform-fmt-check.outputs.fmt }}\`
             #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-            #### Terraform Validation 🤖${{ steps.validate.outputs.stdout }}
+            #### Terraform Validation 🤖\`${{ needs.terraform-validate.outputs.validate }}\`
             #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
             
             <details><summary>Show Plan</summary>
@@ -122,7 +124,6 @@ jobs:
   infracost:
     runs-on: ubuntu-latest
     name: Evaluate cost management with infracost
-    needs: terraform-plan
     if: github.event_name == 'pull_request'
     steps:
     - name: Checkout source code
