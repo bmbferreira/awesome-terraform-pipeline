@@ -121,6 +121,9 @@ jobs:
               repo: context.repo.repo,
               body: output
             })
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
   infracost:
     runs-on: ubuntu-latest
     name: Evaluate cost management with infracost
