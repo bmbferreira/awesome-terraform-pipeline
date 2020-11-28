@@ -16,7 +16,7 @@ env:
 
 jobs:
   terraform-fmt-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-16.04
     outputs:
       fmt: ${{ steps.fmt.outcome }} 
     steps:
@@ -29,7 +29,7 @@ jobs:
         run: terraform fmt --recursive -check
         working-directory: terraform
   terraform-validate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-16.04
     outputs:
       validate: ${{ steps.validate.outcome }}
     steps:
@@ -46,7 +46,7 @@ jobs:
         run: terraform validate -no-color
         working-directory: ${{ env.STAGING_TF_WORKING_DIR }}
   terraform-lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-16.04
     steps:
       - uses: hashicorp/setup-terraform@v1
         name: Setup Terraform
@@ -57,7 +57,7 @@ jobs:
         run: terraform init
         working-directory: ${{ env.STAGING_TF_WORKING_DIR }}
       - name: tflint
-        uses: reviewdog/action-tflint@master
+        uses: reviewdog/action-tflint@v1
         with:
           github_token: ${{ secrets.github_token }}
           flags: "-c ../.tflint.hcl"
@@ -65,19 +65,19 @@ jobs:
           fail_on_error: "true"
           filter_mode: "nofilter"
   checkov:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-16.04
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
       - name: Run Checkov action
         id: checkov
-        uses: bridgecrewio/checkov-action@master
+        uses: bridgecrewio/checkov-action@v13
         with:
           directory: ${{ env.STAGING_TF_WORKING_DIR }}
           quiet: true 
           framework: terraform 
   terraform-plan:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-16.04
     needs: [terraform-fmt-check, terraform-validate, terraform-lint]
     steps:
       - name: Setup Terraform
@@ -125,14 +125,13 @@ jobs:
         if: steps.plan.outcome == 'failure'
         run: exit 1
   infracost:
-    runs-on: ubuntu-latest
-    name: Evaluate cost management with infracost
+    runs-on: ubuntu-16.04
     if: github.event_name == 'pull_request'
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
     - name: Run infracost diff
-      uses: infracost/infracost-gh-action@master 
+      uses: infracost/infracost-gh-action@master
       env:
         INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -140,3 +139,18 @@ jobs:
         tfdir: ${{ env.STAGING_TF_WORKING_DIR }}
         entrypoint: /scripts/ci/diff.sh
         percentage_threshold: 1
+  docs:
+    runs-on: ubuntu-16.04
+    if: github.event_name == 'push'
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v2
+      with:
+        ref: main
+    - name: Generate TF Docs
+      uses: Dirrk/terraform-docs@v1
+      with:
+        tf_docs_working_dir: modules/aws-backend-state,modules/ec2-cluster,modules/vpc
+        tf_docs_output_file: README.md
+        tf_docs_output_method: inject
+        tf_docs_git_push: 'true'
