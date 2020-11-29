@@ -150,7 +150,7 @@ jobs:
     - name: Generate TF Docs
       uses: Dirrk/terraform-docs@v1
       with:
-        tf_docs_working_dir: modules/aws-backend-state,modules/ec2-cluster,modules/vpc
+        tf_docs_working_dir: terraform/modules/aws-backend-state,terraform/modules/ec2-cluster,terraform/modules/vpc
         tf_docs_output_file: README.md
         tf_docs_output_method: inject
         tf_docs_git_push: 'true'
