@@ -20,4 +20,25 @@ terraform {
 ```
 
 <!--- BEGIN_TF_DOCS --->
+## Requirements
+
+No requirements.
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| aws | n/a |
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| bucket\_name | The name of the bucket to save the state | `string` | n/a | yes |
+| dynamodb\_table\_name | The name of the dynamodb table to handle locks | `string` | n/a | yes |
+
+## Outputs
+
+No output.
+
 <!--- END_TF_DOCS --->
