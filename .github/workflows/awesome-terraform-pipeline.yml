@@ -78,7 +78,7 @@ jobs:
           framework: terraform 
   terraform-plan:
     runs-on: ubuntu-16.04
-    needs: [terraform-fmt-check, terraform-validate, terraform-lint]
+    needs: [terraform-fmt-check, terraform-validate, terraform-lint, checkov]
     steps:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
@@ -127,7 +127,7 @@ jobs:
   infracost:
     runs-on: ubuntu-16.04
     if: github.event_name == 'pull_request'
-    needs: [terraform-fmt-check, terraform-validate, terraform-lint]
+    needs: [terraform-fmt-check, terraform-validate, terraform-lint, checkov]
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
@@ -142,7 +142,7 @@ jobs:
         percentage_threshold: 1
   docs:
     runs-on: ubuntu-16.04
-    if: github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: [terraform-plan]
     steps:
     - name: Checkout source code
@@ -156,3 +156,15 @@ jobs:
         tf_docs_output_file: README.md
         tf_docs_output_method: inject
         tf_docs_git_push: 'true'
+  apply:
+    runs-on: ubuntu-16.04
+    if: false && github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [terraform-plan]
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v2
+      with:
+        ref: main
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
+
