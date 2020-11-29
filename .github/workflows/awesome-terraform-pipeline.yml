@@ -71,7 +71,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Run Checkov action
         id: checkov
-        uses: bridgecrewio/checkov-action@v13
+        uses: bridgecrewio/checkov-action@v12
         with:
           directory: ${{ env.STAGING_TF_WORKING_DIR }}
           quiet: true 
