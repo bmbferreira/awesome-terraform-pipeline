@@ -127,6 +127,7 @@ jobs:
   infracost:
     runs-on: ubuntu-16.04
     if: github.event_name == 'pull_request'
+    needs: [terraform-fmt-check, terraform-validate, terraform-lint]
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
@@ -142,6 +143,7 @@ jobs:
   docs:
     runs-on: ubuntu-16.04
     if: github.event_name == 'push'
+    needs: [terraform-plan]
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
