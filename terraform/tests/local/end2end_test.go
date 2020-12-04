@@ -57,7 +57,7 @@ func TestS3AccessRole(t *testing.T) {
 	terraform.InitAndApply(t, terraformOptions)
 
 	// Verify that our Bucket has versioning enabled
-	actualStatus := aws.GetS3BucketVersioning(t, awsRegion, "awesome-bucket-123")
+	actualStatus := aws.GetS3BucketVersioning(t, awsRegion, "awesome-bucket")
 	expectedStatus := "Enabled"
 	assert.Equal(t, expectedStatus, actualStatus)
 }
