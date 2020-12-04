@@ -177,7 +177,7 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v2
       - name: Run tests
-        working-directory: terraform/tests/local
+        working-directory: terraform/tests/dev
         run: go test -v -timeout 30m
   infracost:
     runs-on: ubuntu-16.04
