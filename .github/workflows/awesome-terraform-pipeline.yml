@@ -12,11 +12,13 @@ env:
   AWS_DEFAULT_REGION: ${{ secrets.aws_default_region }}
   AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
-  STAGING_TF_WORKING_DIR: terraform/staging
 
 jobs:
   terraform-fmt-check:
     runs-on: ubuntu-16.04
+    strategy:
+      matrix:
+        tf_working_dir: [terraform/local, terraform/dev, terraform/staging]
     outputs:
       fmt: ${{ steps.fmt.outcome }} 
     steps:
@@ -27,9 +29,12 @@ jobs:
       - name: Terraform fmt
         id: fmt
         run: terraform fmt --recursive -check
-        working-directory: terraform
+        working-directory: ${{ matrix.tf_working_dir }}
   terraform-validate:
     runs-on: ubuntu-16.04
+    strategy:
+      matrix:
+        tf_working_dir: [terraform/local, terraform/dev, terraform/staging]
     outputs:
       validate: ${{ steps.validate.outcome }}
     steps:
@@ -40,13 +45,16 @@ jobs:
       - name: Terraform Init
         id: init
         run: terraform init
-        working-directory: ${{ env.STAGING_TF_WORKING_DIR }}
+        working-directory: ${{ matrix.tf_working_dir }}
       - name: Terraform Validate
         id: validate
         run: terraform validate -no-color
-        working-directory: ${{ env.STAGING_TF_WORKING_DIR }}
+        working-directory: ${{ matrix.tf_working_dir }}
   terraform-lint:
     runs-on: ubuntu-16.04
+    strategy:
+      matrix:
+        tf_working_dir: [terraform/local, terraform/dev, terraform/staging]
     steps:
       - uses: hashicorp/setup-terraform@v1
         name: Setup Terraform
@@ -55,17 +63,20 @@ jobs:
       - name: Terraform Init
         id: init
         run: terraform init
-        working-directory: ${{ env.STAGING_TF_WORKING_DIR }}
+        working-directory: ${{ matrix.tf_working_dir }}
       - name: tflint
         uses: reviewdog/action-tflint@v1
         with:
           github_token: ${{ secrets.github_token }}
           flags: "-c ../.tflint.hcl"
-          working_directory: ${{ env.STAGING_TF_WORKING_DIR }}
+          working_directory: ${{ matrix.tf_working_dir }}
           fail_on_error: "true"
           filter_mode: "nofilter"
   checkov:
     runs-on: ubuntu-16.04
+    strategy:
+      matrix:
+        tf_working_dir: [terraform/local, terraform/dev, terraform/staging]
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
@@ -73,11 +84,14 @@ jobs:
         id: checkov
         uses: bridgecrewio/checkov-action@master
         with:
-          directory: ${{ env.STAGING_TF_WORKING_DIR }}
+          directory: ${{ matrix.tf_working_dir }}
           quiet: true 
           framework: terraform 
   terraform-plan:
     runs-on: ubuntu-16.04
+    strategy:
+      matrix:
+        tf_working_dir: [terraform/local, terraform/dev, terraform/staging]
     needs: [terraform-fmt-check, terraform-validate, terraform-lint, checkov]
     steps:
       - name: Setup Terraform
@@ -87,11 +101,11 @@ jobs:
       - name: Terraform Init
         id: init
         run: terraform init
-        working-directory: ${{ env.STAGING_TF_WORKING_DIR }}
+        working-directory: ${{ matrix.tf_working_dir }}
       - name: Terraform Plan
         id: plan
         run: terraform plan -no-color -out=tfplan
-        working-directory: ${{ env.STAGING_TF_WORKING_DIR }}
+        working-directory: ${{ matrix.tf_working_dir }}
         continue-on-error: true
       - name: Publish terraform plan
         id: publish-plan
@@ -113,7 +127,7 @@ jobs:
             
             </details>
             
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.STAGING_TF_WORKING_DIR }}\`, Workflow: \`${{ github.workflow }}\`*`;
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ matrix.tf_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
               
             github.issues.createComment({
               issue_number: context.issue.number,
@@ -124,6 +138,33 @@ jobs:
       - name: Terraform Plan Status
         if: steps.plan.outcome == 'failure'
         run: exit 1
+  localstack-test:
+    runs-on: ubuntu-16.04
+    needs: [terraform-plan]
+    services:
+      localstack:
+        image: localstack/localstack:latest
+        env:
+          SERVICES: ec2,cloudformation,iam,sts,ssm,s3,cloudwatch,cloudwatch-logs,lambda,dynamodb,apigateway
+          DEFAULT_REGION: eu-west-1
+          AWS_ACCESS_KEY_ID: mock_access_key
+          AWS_SECRET_ACCESS_KEY: mock_access_key
+        ports:
+          - 4566:4566
+          - 4571:4571
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+      - name: Checkout source code
+        uses: actions/checkout@v2
+      - name: Run tests
+        working-directory: terraform/tests/local
+        run: go test -v -timeout 30m
+      
   infracost:
     runs-on: ubuntu-16.04
     if: github.event_name == 'pull_request'
@@ -137,7 +178,7 @@ jobs:
         INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tfdir: ${{ env.STAGING_TF_WORKING_DIR }}
+        tfdir: terraform/staging
         entrypoint: /scripts/ci/diff.sh
         percentage_threshold: 1
   docs:
