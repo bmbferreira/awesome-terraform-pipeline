@@ -14,7 +14,7 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
 
 jobs:
-  terraform-fmt-check:
+  tf-fmt-check:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
@@ -30,7 +30,7 @@ jobs:
         id: fmt
         run: terraform fmt --recursive -check
         working-directory: ${{ matrix.tf_working_dir }}
-  terraform-validate:
+  tf-validate:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
@@ -50,7 +50,7 @@ jobs:
         id: validate
         run: terraform validate -no-color
         working-directory: ${{ matrix.tf_working_dir }}
-  terraform-lint:
+  tf-lint:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
@@ -87,12 +87,12 @@ jobs:
           directory: ${{ matrix.tf_working_dir }}
           quiet: true 
           framework: terraform 
-  terraform-plan:
+  tf-plan:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
         tf_working_dir: [terraform/local, terraform/dev, terraform/staging]
-    needs: [terraform-fmt-check, terraform-validate, terraform-lint, checkov]
+    needs: [tf-fmt-check, tf-validate, tf-lint, checkov]
     steps:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
@@ -116,9 +116,9 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `#### Terraform Format and Style 🖌\`${{ needs.terraform-fmt-check.outputs.fmt }}\`
+            const output = `#### Terraform Format and Style 🖌\`${{ needs.tf-fmt-check.outputs.fmt }}\`
             #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-            #### Terraform Validation 🤖\`${{ needs.terraform-validate.outputs.validate }}\`
+            #### Terraform Validation 🤖\`${{ needs.tf-validate.outputs.validate }}\`
             #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
             
             <details><summary>Show Plan</summary>
@@ -140,7 +140,7 @@ jobs:
         run: exit 1
   localstack-test:
     runs-on: ubuntu-16.04
-    needs: [terraform-plan]
+    needs: [tf-plan]
     services:
       localstack:
         image: localstack/localstack:latest
@@ -168,7 +168,7 @@ jobs:
   infracost:
     runs-on: ubuntu-16.04
     if: github.event_name == 'pull_request'
-    needs: [terraform-fmt-check, terraform-validate, terraform-lint, checkov]
+    needs: [tf-fmt-check, tf-validate, tf-lint, checkov]
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
@@ -184,7 +184,7 @@ jobs:
   docs:
     runs-on: ubuntu-16.04
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: [terraform-plan]
+    needs: [tf-plan]
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
@@ -200,7 +200,7 @@ jobs:
   apply:
     runs-on: ubuntu-16.04
     if: false && github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: [terraform-plan]
+    needs: [tf-plan]
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
