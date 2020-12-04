@@ -8,7 +8,7 @@ import (
 	"gotest.tools/assert"
 )
 
-func TestS3AccessRole(t *testing.T) {
+func TestS3EnabledVersioning(t *testing.T) {
 	t.Parallel()
 
 	awsRegion := "us-east-1"

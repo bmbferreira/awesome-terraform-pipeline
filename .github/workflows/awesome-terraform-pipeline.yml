@@ -164,7 +164,21 @@ jobs:
       - name: Run tests
         working-directory: terraform/tests/local
         run: go test -v -timeout 30m
-      
+  dev-test:
+    runs-on: ubuntu-16.04
+    needs: [tf-plan]
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+      - name: Checkout source code
+        uses: actions/checkout@v2
+      - name: Run tests
+        working-directory: terraform/tests/local
+        run: go test -v -timeout 30m
   infracost:
     runs-on: ubuntu-16.04
     if: github.event_name == 'pull_request'
