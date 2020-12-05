@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        tf_working_dir: [terraform/local, terraform/dev, terraform/staging]
+        tf_working_dir: [terraform/local, terraform/dev, terraform/production]
     outputs:
       fmt: ${{ steps.fmt.outcome }} 
     steps:
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        tf_working_dir: [terraform/local, terraform/dev, terraform/staging]
+        tf_working_dir: [terraform/local, terraform/dev, terraform/production]
     outputs:
       validate: ${{ steps.validate.outcome }}
     steps:
@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        tf_working_dir: [terraform/local, terraform/dev, terraform/staging]
+        tf_working_dir: [terraform/local, terraform/dev, terraform/production]
     steps:
       - uses: hashicorp/setup-terraform@v1
         name: Setup Terraform
@@ -76,7 +76,7 @@ jobs:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        tf_working_dir: [terraform/local, terraform/dev, terraform/staging]
+        tf_working_dir: [terraform/local, terraform/dev, terraform/production]
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
@@ -91,7 +91,7 @@ jobs:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        tf_working_dir: [terraform/local, terraform/dev, terraform/staging]
+        tf_working_dir: [terraform/local, terraform/dev, terraform/production]
     needs: [tf-fmt-check, tf-validate, tf-lint, checkov]
     steps:
       - name: Setup Terraform
@@ -192,7 +192,7 @@ jobs:
         INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tfdir: terraform/staging
+        tfdir: terraform/production
         entrypoint: /scripts/ci/diff.sh
         percentage_threshold: 1
   docs:
