@@ -106,11 +106,11 @@ jobs:
         id: plan
         run: terraform plan -no-color -out=tfplan
         working-directory: ${{ matrix.tf_working_dir }}
-        continue-on-error: true
+        continue-on-error: matrix.tf_working_dir == 'terraform/production'
       - name: Publish terraform plan
         id: publish-plan
         uses: actions/github-script@0.9.0
-        if: github.event_name == 'pull_request' 
+        if: github.event_name == 'pull_request' && matrix.tf_working_dir == 'terraform/production'
         env:
           PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
         with:
@@ -213,13 +213,19 @@ jobs:
         tf_docs_git_push: 'true'
   apply:
     runs-on: ubuntu-16.04
-    if: false && github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: [tf-plan]
     steps:
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1  
     - name: Checkout source code
       uses: actions/checkout@v2
       with:
         ref: main
+    - name: Terraform Init
+      run: terraform init
+      working-directory: terraform/production
     - name: Terraform Apply
       run: terraform apply -auto-approve
+      working-directory: terraform/production
 
