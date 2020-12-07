@@ -106,7 +106,7 @@ jobs:
         id: plan
         run: terraform plan -no-color -out=tfplan
         working-directory: ${{ matrix.tf_working_dir }}
-        continue-on-error: matrix.tf_working_dir == 'terraform/production'
+        continue-on-error: ${{ matrix.tf_working_dir }} == 'terraform/production'
       - name: Publish terraform plan
         id: publish-plan
         uses: actions/github-script@0.9.0
