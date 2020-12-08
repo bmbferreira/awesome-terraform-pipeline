@@ -14,6 +14,7 @@ No requirements.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| ami | The AMI to install on the the instances | `string` | n/a | yes |
 | ebs\_type | The ebs type of the disks to associate with the instances | `string` | n/a | yes |
 | instance\_type | The instance type of the instances | `string` | n/a | yes |
 | instances\_number | The number of ec2 instances | `number` | n/a | yes |
