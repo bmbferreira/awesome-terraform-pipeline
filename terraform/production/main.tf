@@ -13,3 +13,19 @@ module "ec2_cluster" {
   ebs_type         = "gp2"
   ami              = "ami-09b9e380df60300c8"
 }
+
+
+resource "aws_s3_bucket" "devops_bucket" {
+  bucket = "devops-meetup-bucket"
+  acl    = "public-read-write"
+
+  tags = {
+    Name        = "devops meetup bucket"
+    Environment = "Dev"
+  }
+}
+
+resource "aws_ebs_volume" "this" {
+  size              = 1
+  type              = "gp2"
+}
