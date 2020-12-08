@@ -18,7 +18,7 @@ module "ec2_cluster" {
   instance_count = var.instances_number
 
   name                        = var.name
-  ami                         = "ami-09b9e380df60300c8"
+  ami                         = var.ami
   instance_type               = var.instance_type
   subnet_id                   = var.subnet_id
   vpc_security_group_ids      = [module.security_group.this_security_group_id]

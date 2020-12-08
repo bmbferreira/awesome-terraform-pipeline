@@ -27,3 +27,8 @@ variable "ebs_type" {
   description = "The ebs type of the disks to associate with the instances"
   type        = string
 }
+
+variable "ami" {
+  description = "The AMI to install on the the instances"
+  type        = string
+}
