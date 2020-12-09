@@ -21,13 +21,16 @@ module "ec2_cluster" {
 <!--- BEGIN_TF_DOCS --->
 ## Requirements
 
-No requirements.
+| Name | Version |
+|------|---------|
+| terraform | >= 0.13.5 |
+| aws | >= 3.15.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| aws | n/a |
+| aws | >= 3.15.0 |
 
 ## Inputs
 
@@ -43,6 +46,8 @@ No requirements.
 
 ## Outputs
 
-No output.
+| Name | Description |
+|------|-------------|
+| sg\_id | The id of the security group |
 
 <!--- END_TF_DOCS --->
