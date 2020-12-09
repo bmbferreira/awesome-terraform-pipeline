@@ -41,3 +41,14 @@ resource "aws_ebs_volume" "this" {
   type              = var.ebs_type
   encrypted         = true
 }
+
+terraform {
+  required_version = ">= 0.13.5"
+
+  required_providers {
+    aws = {
+      version = ">= 3.15.0"
+      source  = "hashicorp/aws"
+    }
+  }
+}

@@ -1,4 +1,23 @@
-# Usage
+# AWS EC2 Cluster Terraform module
+
+Basic and dummy module to create a "cluster" of identical ec2 instances with the same subgroup, 
+on the same vpc and on the same subnet.
+
+## Usage
+
+```hcl
+module "ec2_cluster" {
+  source           = "../modules/ec2-cluster"
+  name             = "awesome-ec2-cluster"
+  instances_number = 10
+  vpc_id           = "vpc-id-123"
+  subnet_id        = "subnet-id-123"
+  instance_type    = "t3.xlarge"
+  ebs_type         = "gp2"
+  ami              = "ami-09b9e380df60300c8"
+}
+```
+
 <!--- BEGIN_TF_DOCS --->
 ## Requirements
 
