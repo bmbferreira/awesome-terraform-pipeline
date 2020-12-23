@@ -1,6 +1,6 @@
-![Awesome terraform pipeline](https://github.com/bmbferreira/awesome-terraform-pipeline/workflows/Awesome%20Terraform%20Workflow/badge.svg)
-
 # Awesome terraform pipeline
+
+![Awesome terraform pipeline](https://github.com/bmbferreira/awesome-terraform-pipeline/workflows/Awesome%20Terraform%20Workflow/badge.svg)
 
 This repository is a collection of experiments with different terraform tools
 to automate tests, infrastructure cost management, documentation, static code analysis and security checks 
